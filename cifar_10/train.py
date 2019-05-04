@@ -34,16 +34,16 @@ def main(argv=None):
     dir_log = os.path.join(FLAGS.output, 'log')
     dir_model = os.path.join(FLAGS.output, 'cifar-10-model', str(int(datetime.now().timestamp())))
 
-    os.makedirs(dir_log, exist_ok=True)
+    tf.io.gfile.makedirs(dir_log)
 
     # Save configuration
     path_flags = os.path.join(dir_log, 'flags.json')
-    with open(path_flags, 'w', encoding='utf-8') as f:
+    with tf.io.gfile.GFile(path_flags, 'w') as f:
         json.dump(FLAGS.flag_values_dict(), f, ensure_ascii=False, indent=4)
 
     # Save model summary
     path_model_summary = os.path.join(dir_log, 'model.txt')
-    with open(path_model_summary, 'w') as f:
+    with tf.io.gfile.GFile(path_model_summary, 'w') as f:
         model.summary(print_fn=lambda x: print(x, file=f))
 
     steps_pre_epoch = num_train_data / FLAGS.batch
