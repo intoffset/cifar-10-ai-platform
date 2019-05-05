@@ -3,17 +3,20 @@
 
 import json
 import os
+
 from absl import app, flags
 import tensorflow as tf
 from datetime import datetime
 
 from cifar_10.input import get_train_dataset, get_test_dataset
 from cifar_10.model import gen_model
+from cifar_10.util import step_decay_schedule
 
 flags.DEFINE_string('input', '../input', "input directory")
 flags.DEFINE_string('output', '../output', "output directory")
 flags.DEFINE_integer('batch', 64, "batch size")
-flags.DEFINE_integer('epochs', 10, "epochs")
+flags.DEFINE_integer('epochs', 100, "epochs")
+flags.DEFINE_integer('epochs_decay', 25, "epochs")
 
 FLAGS = flags.FLAGS
 
@@ -46,9 +49,12 @@ def main(argv=None):
     with tf.io.gfile.GFile(path_model_summary, 'w') as f:
         model.summary(print_fn=lambda x: print(x, file=f))
 
-    steps_pre_epoch = num_train_data / FLAGS.batch
+    lr_decay = tf.keras.callbacks.LearningRateScheduler(step_decay_schedule(step_size=FLAGS.epochs_decay), verbose=1)
+
+    # steps_pre_epoch = num_train_data / FLAGS.batch
+    steps_pre_epoch = 10
     model.fit(train_dataset, epochs=FLAGS.epochs, steps_per_epoch=steps_pre_epoch,
-              validation_data=test_dataset)
+              validation_data=test_dataset, callbacks=[lr_decay])
 
     tf.saved_model.save(model, dir_model)
 
