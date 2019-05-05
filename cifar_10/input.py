@@ -17,14 +17,28 @@ def preprocess(sample):
 def get_train_dataset(dir_input, batch_size):
     filenames = tf.io.gfile.glob(os.path.join(dir_input, "data_batch_*.bin"))
     train_dataset = tf.data.FixedLengthRecordDataset(filenames, label_bytes + image_bytes)
-    train_dataset = train_dataset.map(preprocess)
+    train_dataset = train_dataset.map(preprocess, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+
+    def augmentation(image, label):
+        image = tf.image.random_flip_left_right(image)
+        image = tf.image.random_crop(image, (28, 28, 3))
+        return image, label
+
+    train_dataset = train_dataset.map(augmentation, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     train_dataset = train_dataset.shuffle(buffer_size=32).repeat().batch(batch_size)
+
     return train_dataset
 
 
 def get_test_dataset(dir_input, batch_size):
     filenames = tf.io.gfile.glob(os.path.join(dir_input, "test_batch.bin"))
     test_dataset = tf.data.FixedLengthRecordDataset(filenames, label_bytes + image_bytes)
-    test_dataset = test_dataset.map(preprocess)
+    test_dataset = test_dataset.map(preprocess, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+
+    def central_crop(image, label):
+        image = tf.image.crop_to_bounding_box(image, 4, 4, 28, 28)
+        return image, label
+
+    test_dataset = test_dataset.map(central_crop, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     test_dataset = test_dataset.batch(batch_size)
     return test_dataset

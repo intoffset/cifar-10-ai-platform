@@ -23,11 +23,11 @@ num_test_data = 10000
 
 def main(argv=None):
 
-    # DEFINE INPUT
+    # Define input
     train_dataset = get_train_dataset(FLAGS.input, FLAGS.batch)
     test_dataset = get_test_dataset(FLAGS.input, FLAGS.batch)
 
-    # DEFINE MODEL
+    # Define model
     model = gen_model()
     model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
