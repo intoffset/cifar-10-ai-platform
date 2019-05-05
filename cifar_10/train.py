@@ -49,12 +49,13 @@ def main(argv=None):
     with tf.io.gfile.GFile(path_model_summary, 'w') as f:
         model.summary(print_fn=lambda x: print(x, file=f))
 
+    # Define callbacks
     lr_decay = tf.keras.callbacks.LearningRateScheduler(step_decay_schedule(step_size=FLAGS.epochs_decay), verbose=1)
+    tensor_board = tf.keras.callbacks.TensorBoard(dir_log)
 
-    # steps_pre_epoch = num_train_data / FLAGS.batch
-    steps_pre_epoch = 10
+    steps_pre_epoch = num_train_data / FLAGS.batch
     model.fit(train_dataset, epochs=FLAGS.epochs, steps_per_epoch=steps_pre_epoch,
-              validation_data=test_dataset, callbacks=[lr_decay])
+              validation_data=test_dataset, callbacks=[lr_decay, tensor_board])
 
     tf.saved_model.save(model, dir_model)
 
