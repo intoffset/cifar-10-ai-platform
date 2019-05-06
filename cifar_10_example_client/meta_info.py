@@ -4,18 +4,16 @@ from oauth2client.client import GoogleCredentials
 from googleapiclient import discovery
 from googleapiclient import errors
 
-from absl import app, flags
-
-flags.DEFINE_string('project', None, "Project ID of GCP")
-flags.DEFINE_string('model', None, "Model name")
-flags.DEFINE_string('version', None, "Model version")
-
-FLAGS = flags.FLAGS
+import click
 
 
-def main(argv=None):
+@click.command()
+@click.option('--project', required=True, help="GCP project ID")
+@click.option('--model', required=True, help="model name")
+@click.option('--version', default=None, required=False, help="model version")
+def main(project, model, version):
     ml_service = discovery.build('ml', 'v1')
-    res = get_model_meta(ml_service, FLAGS.project, FLAGS.model, FLAGS.version)
+    res = get_model_meta(ml_service, project, model, version)
     print(res)
 
 
@@ -31,4 +29,4 @@ def get_model_meta(service, project, model, version=None):
 
 
 if __name__ == '__main__':
-    app.run(main)
+    main()

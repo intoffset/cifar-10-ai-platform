@@ -1,47 +1,44 @@
 #!/usr/bin/env python
 
 import os
-import numpy as np
-import sys
+
 from oauth2client.client import GoogleCredentials
 from googleapiclient import discovery
 from googleapiclient import errors
-
-from absl import app, flags
+import click
 import matplotlib.pyplot as plt
+import numpy as np
 
-flags.DEFINE_string('project', None, "Project ID of GCP")
-flags.DEFINE_string('model', None, "Model name")
-flags.DEFINE_string('version', None, "Model version")
-flags.DEFINE_bool('train_data', False, "Whether to use train data")
-flags.DEFINE_string('input', '../input', "Input directory")
-flags.DEFINE_integer('num', 1, "Number of image to inference")
-
-FLAGS = flags.FLAGS
 
 label_bytes = 1
 image_bytes = 32 * 32 * 3
 
 
-def main(argv=None):
-
+@click.command()
+@click.option('--project', required=True, help="GCP project ID")
+@click.option('--model', required=True, help="model name")
+@click.option('--version', default=None, required=False, help="model version")
+@click.option('--input', default='../input', required=False, help="input directory")
+@click.option('--train-data/--no-train-data', default=False, required=False, help="whether to inference training data")
+@click.option('--num', type=int, default=1, required=False, help="number of image to inference")
+def main(project, model, version, train_data, input, num):
     ml_service = discovery.build('ml', 'v1')
 
-    label_names = np.loadtxt(os.path.join(FLAGS.input, "batches.meta.txt"), dtype=str)
+    label_names = np.loadtxt(os.path.join(input, "batches.meta.txt"), dtype=str)
 
-    if FLAGS.train_data:
+    if train_data:
         filename = 'data_batch_1.bin'
     else:
         filename = 'test_batch.bin'
 
-    with open(os.path.join(FLAGS.input, filename), 'rb') as f:
-        for i in range(FLAGS.num):
+    with open(os.path.join(input, filename), 'rb') as f:
+        for i in range(num):
             buffer = f.read(label_bytes + image_bytes)
             label = np.frombuffer(buffer, np.uint8, count=1, offset=0)[0]
             image = np.frombuffer(buffer, np.uint8, count=image_bytes, offset=1)
             image = np.transpose(np.reshape(image, [3, 32, 32]), [1, 2, 0])
             payload = generate_payload(image)
-            response = request_inference(ml_service, payload, FLAGS.project, FLAGS.model, FLAGS.version)
+            response = request_inference(ml_service, payload, project, model, version)
             probabilities = response['predictions'][0]['probabilities']
             pred = response['predictions'][0]['classes']
             plt.title("Ground Truth: {}, Prediction: {} ({:.2f}%)".format(
