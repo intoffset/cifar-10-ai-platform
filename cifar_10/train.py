@@ -9,7 +9,7 @@ import tensorflow as tf
 from datetime import datetime
 
 from cifar_10.input import get_train_dataset, get_test_dataset
-from cifar_10.model import gen_model
+from cifar_10.model import gen_model, wrap_model
 from cifar_10.util import step_decay_schedule
 
 flags.DEFINE_string('input', '../input', "input directory")
@@ -54,10 +54,13 @@ def main(argv=None):
     tensor_board = tf.keras.callbacks.TensorBoard(dir_log)
 
     steps_pre_epoch = num_train_data / FLAGS.batch
+
     model.fit(train_dataset, epochs=FLAGS.epochs, steps_per_epoch=steps_pre_epoch,
               validation_data=test_dataset, callbacks=[lr_decay, tensor_board])
 
-    tf.saved_model.save(model, dir_model)
+    wrapper_model = wrap_model(model)
+
+    tf.saved_model.save(wrapper_model, dir_model)
 
 
 if __name__ == '__main__':
