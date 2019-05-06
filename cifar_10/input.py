@@ -36,7 +36,7 @@ def get_test_dataset(dir_input, batch_size):
     test_dataset = test_dataset.map(preprocess, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
     def central_crop(image, label):
-        image = tf.image.crop_to_bounding_box(image, 4, 4, 28, 28)
+        image = tf.image.crop_to_bounding_box(image, 2, 2, 28, 28)
         return image, label
 
     test_dataset = test_dataset.map(central_crop, num_parallel_calls=tf.data.experimental.AUTOTUNE)
