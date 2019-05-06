@@ -51,9 +51,8 @@ def main(argv=None):
 
 
 def generate_payload(image):
-    image = image.astype(np.float) / 255.
     image = image[2:30, 2:30, :]
-    return {"instances": [{"conv2d_input": image.tolist()}]}
+    return {"instances": [{"x": image.tolist()}]}
 
 
 def request_inference(service, payload, project, model, version=None):
