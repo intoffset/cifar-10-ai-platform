@@ -42,10 +42,10 @@ def main(argv=None):
             image = np.transpose(np.reshape(image, [3, 32, 32]), [1, 2, 0])
             payload = generate_payload(image)
             res = request_inference(ml_service, payload, FLAGS.project, FLAGS.model, FLAGS.version)
-            confidence = res['predictions'][0]['dense_1']
-            pred = np.argmax(confidence)
+            probabilities = res['predictions'][0]['probabilities']
+            pred = res['predictions'][0]['classes']
             plt.title("Ground Truth: {}, Prediction: {} ({:.2f}%)".format(
-                label_names[label], label_names[pred], confidence[pred] * 100))
+                label_names[label], label_names[pred], probabilities[pred] * 100))
             plt.imshow(image)
             plt.show()
 
