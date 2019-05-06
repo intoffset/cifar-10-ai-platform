@@ -4,7 +4,7 @@ from setuptools import setup
 REQUIRED_PACKAGES = ['tensorflow-gpu==2.0.0a0']
 
 setup(
-    name='cifar_10',
+    name='cifar_10_example',
     version='0.1',
     install_requires=REQUIRED_PACKAGES,
     packages=find_packages(),
